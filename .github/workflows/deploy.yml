@@ -1,38 +1,35 @@
 name: 🚀 Deploy to Hugging Face Spaces
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clone repo
+      - name: 📥 Clone GitHub Repo
         uses: actions/checkout@v3
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
       - name: 🤗 Install Hugging Face CLI
         run: pip install huggingface_hub
 
-      - name: 🚀 Push to Hugging Face Space
+      - name: 🚀 Push to Hugging Face Space via Git
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git config --global user.email "gautham.balajis@gmail.com"
-          git config --global user.name "gautham-balaji"
-          
-          huggingface-cli repo clone GauthamB1207/churn-prediction-streamlit --type=space --token "$HF_TOKEN" space_repo
-          
-          rm -rf space_repo/*
-          cp -r streamlit_app/* space_repo/
-          cp requirements.txt space_repo/
-          cp Home.py churn_eda.ipynb space_repo/
-          
-          cd space_repo
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git clone https://huggingface.co/spaces/GauthamB1207/churn-prediction-streamlit hf_space
+          rsync -av --delete --exclude '.git' ./ hf_space/
+          cd hf_space
           git add .
-          git commit -m "🔄 Auto-update from merged PR"
-          git push
+          git commit -m "🤖 Auto-update from GitHub Actions" || echo "No changes to commit"
+          git push https://GauthamB1207:$HF_TOKEN@huggingface.co/spaces/GauthamB1207/churn-prediction-streamlit main
