@@ -1,0 +1,18 @@
+# Ignore Python virtual environment
+churn-env/
+.venv/
+env/
+
+# Ignore OS/system files
+__pycache__/
+*.pyc
+.DS_Store
+
+# Ignore VSCode settings (optional)
+.vscode/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore model weight cache (if ever)
+*.h5
