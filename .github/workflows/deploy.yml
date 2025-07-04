@@ -1,12 +1,14 @@
 name: 🚀 Deploy to Hugging Face Spaces
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
-      - main  # or master, depending on your default branch
+      - main
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -20,5 +22,17 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          huggingface-cli login --token "$HF_TOKEN"
-          huggingface-cli repo upload "GauthamB1207/churn-prediction-streamlit" "." --repo-type=space --yes
+          git config --global user.email "gautham.balajis@gmail.com"
+          git config --global user.name "gautham-balaji"
+          
+          huggingface-cli repo clone GauthamB1207/churn-prediction-streamlit --type=space --token "$HF_TOKEN" space_repo
+          
+          rm -rf space_repo/*
+          cp -r streamlit_app/* space_repo/
+          cp requirements.txt space_repo/
+          cp Home.py churn_eda.ipynb space_repo/
+          
+          cd space_repo
+          git add .
+          git commit -m "🔄 Auto-update from merged PR"
+          git push
